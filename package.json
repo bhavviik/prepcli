@@ -1,0 +1,41 @@
+{
+  "name": "prepcli",
+  "version": "0.1.0",
+  "description": "Persistent AI collaboration layer — context, decisions, and self-improving prompts",
+  "bin": {
+    "prepcli": "./bin/prepcli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "workflows",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test src/tests/**/*.test.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "dotenv": "^17.4.2"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "claude",
+    "cursor",
+    "prompt",
+    "context",
+    "developer-tools",
+    "llm",
+    "workflow"
+  ],
+  "author": "Bhavik Devganiya",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhavikdevganiya/prepcli.git"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
