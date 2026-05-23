@@ -193,6 +193,13 @@ export default {
 
       const project = Array.isArray(projData) ? projData[0] : projData;
 
+      // Add owner to project_members
+      await authedSupabase("/rest/v1/project_members", {
+        method: "POST",
+        body: JSON.stringify({ project_id: project.id, user_id: userId, role: "owner" }),
+        headers: { "Prefer": "return=minimal" },
+      }, token).catch(() => {});
+
       // Seed an empty project_context row
       await authedSupabase("/rest/v1/project_context", {
         method: "POST",
