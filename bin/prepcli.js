@@ -29,6 +29,14 @@ program
   .option("--yes, -y", "Skip confirmation prompt")
   .action((opts) => require("../src/commands/install").run(opts));
 
+// ── Uninstall ─────────────────────────────────────────────────────────────────
+program
+  .command("uninstall")
+  .description("Remove workflow files from AI tool directories")
+  .option("--all", "Remove from all locations without prompting")
+  .option("--yes, -y", "Skip confirmation prompt")
+  .action((opts) => require("../src/commands/uninstall").run(opts));
+
 // ── Context ───────────────────────────────────────────────────────────────────
 program
   .command("context")
