@@ -304,16 +304,25 @@ create policy "projects_member_read"
     )
   );
 
+-- security definer queries projects directly, bypassing RLS on that table.
+create or replace function public.uid_is_project_owner(p_project_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from projects
+    where id = p_project_id and owner_id = auth.uid()
+  );
+$$;
+
 -- ── project_members ───────────────────────────────────────────────────────────
 drop policy if exists "members_owner_manage" on public.project_members;
 create policy "members_owner_manage"
   on public.project_members for all
-  using (
-    exists (
-      select 1 from public.projects
-      where id = project_members.project_id and owner_id = auth.uid()
-    )
-  );
+  using (public.uid_is_project_owner(project_id));
 
 drop policy if exists "members_self_read" on public.project_members;
 create policy "members_self_read"

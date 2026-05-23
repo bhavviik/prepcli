@@ -6,7 +6,7 @@ export default {
 
     const cors = {
       "Access-Control-Allow-Origin":  "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
@@ -38,6 +38,25 @@ export default {
           ...options.headers,
         },
       });
+    }
+
+    // Supabase call with user JWT so RLS applies
+    async function authedSupabase(path, options = {}, userToken) {
+      return fetch(`${env.SUPABASE_URL}${path}`, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          "apikey":        env.SUPABASE_ANON_KEY,
+          "Authorization": `Bearer ${userToken}`,
+          ...options.headers,
+        },
+      });
+    }
+
+    function extractToken(req) {
+      const auth = req.headers.get("Authorization");
+      if (!auth?.startsWith("Bearer ")) return null;
+      return auth.slice(7);
     }
 
     // ── GET /health ──────────────────────────────────────────────────────────
@@ -132,6 +151,124 @@ export default {
         method:  "POST",
         headers: { Authorization: auth },
       }).catch(() => {});
+
+      return json({ ok: true });
+    }
+
+    // ── POST /projects ────────────────────────────────────────────────────────
+    if (path === "/projects" && method === "POST") {
+      const token = extractToken(request);
+      if (!token) return err("Authorization required", 401);
+
+      const { name, git_remote } = await body(request);
+      if (!name) return err("name required");
+
+      // Resolve user id from token
+      const userRes  = await authedSupabase("/auth/v1/user", { method: "GET" }, token);
+      const userData = await userRes.json().catch(() => ({}));
+      if (!userRes.ok || !userData.id) return err("Invalid token", 401);
+      const userId = userData.id;
+
+      // Return existing project if the git remote already maps to one
+      if (git_remote) {
+        const checkRes = await authedSupabase(
+          `/rest/v1/projects?owner_id=eq.${userId}&git_remote=eq.${encodeURIComponent(git_remote)}&select=id`,
+          { method: "GET" },
+          token
+        );
+        const existing = await checkRes.json().catch(() => []);
+        if (Array.isArray(existing) && existing.length > 0) {
+          return json({ project_id: existing[0].id, already_existed: true });
+        }
+      }
+
+      // Create project row
+      const projRes  = await authedSupabase("/rest/v1/projects", {
+        method: "POST",
+        body:   JSON.stringify({ owner_id: userId, name, git_remote: git_remote || null }),
+        headers: { "Prefer": "return=representation" },
+      }, token);
+      const projData = await projRes.json().catch(() => ({}));
+      if (!projRes.ok) return err(projData.message || "Failed to create project");
+
+      const project = Array.isArray(projData) ? projData[0] : projData;
+
+      // Seed an empty project_context row
+      await authedSupabase("/rest/v1/project_context", {
+        method: "POST",
+        body: JSON.stringify({
+          project_id:         project.id,
+          stack:              {},
+          active_constraints: [],
+          recent_decisions:   [],
+          hard_limits:        [],
+          conventions:        {},
+          open_questions:     [],
+        }),
+        headers: { "Prefer": "return=minimal" },
+      }, token).catch(() => {});
+
+      return json({ project_id: project.id });
+    }
+
+    // ── GET /projects/:id/context ─────────────────────────────────────────────
+    if (/^\/projects\/[^/]+\/context$/.test(path) && method === "GET") {
+      const token = extractToken(request);
+      if (!token) return err("Authorization required", 401);
+
+      const projectId = path.split("/")[2];
+
+      const res  = await authedSupabase(
+        `/rest/v1/project_context?project_id=eq.${projectId}&select=*`,
+        { method: "GET" },
+        token
+      );
+      const data = await res.json().catch(() => []);
+      if (!res.ok) return err("Failed to fetch context");
+
+      const row = Array.isArray(data) ? data[0] : null;
+      if (!row) return json({ context: null });
+
+      return json({
+        context: {
+          stack:              row.stack              || {},
+          hard_limits:        row.hard_limits        || [],
+          active_constraints: row.active_constraints || [],
+          conventions:        row.conventions        || {},
+          recent_decisions:   row.recent_decisions   || [],
+          open_questions:     row.open_questions     || [],
+          last_updated:       row.last_updated,
+        },
+      });
+    }
+
+    // ── PUT /projects/:id/context ─────────────────────────────────────────────
+    if (/^\/projects\/[^/]+\/context$/.test(path) && method === "PUT") {
+      const token = extractToken(request);
+      if (!token) return err("Authorization required", 401);
+
+      const projectId = path.split("/")[2];
+      const update    = await body(request);
+
+      const allowed = ["stack", "hard_limits", "active_constraints", "conventions", "recent_decisions", "open_questions"];
+      const payload  = { last_updated: new Date().toISOString() };
+      for (const key of allowed) {
+        if (key in update) payload[key] = update[key];
+      }
+
+      const res = await authedSupabase(
+        `/rest/v1/project_context?project_id=eq.${projectId}`,
+        {
+          method:  "PATCH",
+          body:    JSON.stringify(payload),
+          headers: { "Prefer": "return=minimal" },
+        },
+        token
+      );
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        return err(d.message || "Failed to update context");
+      }
 
       return json({ ok: true });
     }
