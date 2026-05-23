@@ -58,6 +58,32 @@ const DB_DEPS = {
   "@upstash/redis":        "Upstash Redis",
 };
 
+const AUTH_DEPS = {
+  "better-auth":    "better-auth",
+  "next-auth":      "NextAuth",
+  "@auth/core":     "Auth.js",
+  "passport":       "Passport",
+  "lucia":          "Lucia",
+};
+
+const TEST_DEPS = {
+  "vitest":     "Vitest",
+  "jest":       "Jest",
+  "playwright": "Playwright",
+  "cypress":    "Cypress",
+};
+
+const API_DEPS = {
+  "@trpc/server":          "tRPC",
+  "@tanstack/react-query": "TanStack Query",
+};
+
+const STYLE_DEPS = {
+  "tailwindcss":       "Tailwind CSS",
+  "@emotion/react":    "Emotion",
+  "styled-components": "styled-components",
+};
+
 function detectStack(cwd = process.cwd()) {
   const result = { stack: {}, name: null, git_remote: null };
 
@@ -90,6 +116,38 @@ function detectStack(cwd = process.cwd()) {
     // Database
     for (const [dep, label] of Object.entries(DB_DEPS)) {
       if (all[dep]) { result.stack.db = label; break; }
+    }
+
+    // Auth
+    for (const [dep, label] of Object.entries(AUTH_DEPS)) {
+      if (all[dep]) { result.stack.auth = label; break; }
+    }
+
+    // Testing
+    for (const [dep, label] of Object.entries(TEST_DEPS)) {
+      if (all[dep]) { result.stack.testing = label; break; }
+    }
+
+    // API layer
+    for (const [dep, label] of Object.entries(API_DEPS)) {
+      if (all[dep]) { result.stack.api = label; break; }
+    }
+
+    // Styling
+    for (const [dep, label] of Object.entries(STYLE_DEPS)) {
+      if (all[dep]) { result.stack.styling = label; break; }
+    }
+
+    // Monorepo
+    if (all["turbo"] || exists(path.join(cwd, "turbo.json"))) {
+      result.stack.monorepo = "Turborepo";
+    } else if (exists(path.join(cwd, "pnpm-workspace.yaml"))) {
+      result.stack.monorepo = "pnpm workspaces";
+    }
+
+    // i18n
+    if (all["i18next"] || all["next-i18next"] || all["@formatjs/intl"]) {
+      result.stack.i18n = all["i18next"] ? "i18next" : all["next-i18next"] ? "next-i18next" : "FormatJS";
     }
 
     // Package manager
