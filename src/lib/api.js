@@ -3,7 +3,7 @@
 const path = require("node:path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
-const WORKER_URL = process.env.PREPCLI_API_URL || "https://prepcli-api.prepcli.workers.dev";
+const WORKER_URL = process.env.PREPCLI_API_URL || "https://api.prepcli.in";
 
 async function request(method, endpoint, body, token) {
   const headers = { "Content-Type": "application/json" };
