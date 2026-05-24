@@ -45,6 +45,21 @@ program
   .option("--edit", "Open context in editor")
   .action((opts) => require("../src/commands/context").run(opts));
 
+// ── Session (AI calls this silently) ─────────────────────────────────────────
+program
+  .command("session <action>")
+  .description("add | show | clear — manage the local AI session accumulator")
+  .option("--workflow <type>", "Workflow type (debug, plan, review, prep, refactor, write)")
+  .option("--what <text>",     "One sentence: what was done")
+  .option("--why <text>",      "One sentence: why this approach")
+  .action((action, opts) => require("../src/commands/session").run(action, opts));
+
+// ── Internal git hook handler ─────────────────────────────────────────────────
+program
+  .command("_hook <name>", { hidden: true })
+  .description("Internal: called by git hooks installed by prepcli init")
+  .action((name) => require("../src/commands/hook").run(name));
+
 // ── Decision log ──────────────────────────────────────────────────────────────
 program
   .command("log")
@@ -57,9 +72,13 @@ program
 
 // ── Record ────────────────────────────────────────────────────────────────────
 program
-  .command("record [reason]")
+  .command("record")
   .description("Manually save a decision to the shadow branch")
-  .action((reason) => require("../src/commands/record").run(reason));
+  .option("--what <text>",        "What was decided or discovered")
+  .option("--why <text>",         "Why this approach over alternatives")
+  .option("--ruled-out <text>",   "What was considered and rejected (comma-separated)")
+  .option("--workflow <type>",    "Workflow type (manual, debug, plan, discovery)")
+  .action((opts) => require("../src/commands/record").run(opts));
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 program

@@ -138,6 +138,33 @@ async function run() {
       console.log("   Log in with `prepcli auth login` to sync to cloud.");
     }
 
+    // ── Shadow branch + git hooks ─────────────────────────────────────────────
+    const gitLib = require("../lib/git");
+
+    process.stdout.write("\nSetting up shadow branch...");
+    try {
+      if (gitLib.shadowBranchExists(cwd)) {
+        console.log(" already exists.");
+      } else if (gitLib.shadowBranchExistsOnRemote(cwd)) {
+        gitLib.fetchShadowBranch(cwd);
+        console.log(" fetched from remote.");
+      } else {
+        gitLib.initShadowBranch(cwd);
+        console.log(" created.");
+      }
+
+      gitLib.installPrePushHook(cwd);
+      console.log("✓  Pre-push hook installed.");
+
+      gitLib.configurePushRefspec(cwd);
+      console.log("✓  Push refspec configured.");
+
+      gitLib.ensureGitignoreEntry(cwd);
+      console.log("✓  .prepcli-session added to .gitignore.");
+    } catch (err) {
+      console.log(` skipped (${err.message})`);
+    }
+
     console.log("\nDone. Run `prepcli context` to review.");
 
   } finally {
