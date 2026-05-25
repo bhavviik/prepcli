@@ -93,6 +93,11 @@ async function requireLoginFresh() {
     console.error("Session expired. Run: prepcli auth login");
     process.exit(1);
   }
+  const now = Math.floor(Date.now() / 1000);
+  if (cfg.expires_at && now >= cfg.expires_at) {
+    console.error("Session expired. Run: prepcli auth login");
+    process.exit(1);
+  }
   return cfg;
 }
 

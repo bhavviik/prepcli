@@ -8,7 +8,7 @@ module.exports = function getAntigravityTargets({ cwd }) {
       destination: path.join(cwd, ".agent", "workflows"),
       commandNames: ["antigravity"],
       hintPaths: [path.join(cwd, ".agent")],
-      defaultWhenUndetected: true
+      defaultWhenUndetected: false
     }
   ];
 };
