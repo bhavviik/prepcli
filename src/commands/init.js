@@ -27,6 +27,27 @@ async function collectList(rl, header) {
   return items;
 }
 
+async function selectMode(rl) {
+  console.log("\n  How would you like to use prepcli?\n");
+  console.log("  1. Offline  — local only, no account needed");
+  console.log("     ✓  session recording, decision log, shadow branch");
+  console.log("     ✓  all workflows installed and working");
+  console.log("     ✗  no context sync across machines");
+  console.log("     ✗  no team sharing\n");
+  console.log("  2. Online   — free account, synced context");
+  console.log("     ✓  everything in offline mode, plus:");
+  console.log("     ✓  context synced to cloud (works across machines)");
+  console.log("     ✓  team sharing (coming soon)");
+  console.log("     ✓  RAG + smart context (coming soon)\n");
+
+  while (true) {
+    const ans = await prompt(rl, "  Select mode [1/2]: ");
+    if (ans === "1") return "offline";
+    if (ans === "2") return "online";
+    console.log("  Please enter 1 or 2.");
+  }
+}
+
 async function run() {
   const existing = readRC();
 
@@ -57,6 +78,10 @@ async function run() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   try {
+    // ── Mode selection ────────────────────────────────────────────────────────
+    const mode = await selectMode(rl);
+    console.log(`\n  Mode set to: ${mode}\n`);
+
     // ── Confirm or edit stack ─────────────────────────────────────────────────
     const confirm = await prompt(rl, "\nDoes this look right? [Y/n]: ");
 
@@ -102,8 +127,8 @@ async function run() {
       open_questions:      [],
     };
 
-    // ── Push to cloud if logged in ────────────────────────────────────────────
-    if (isLoggedIn()) {
+    // ── Push to cloud if online mode and logged in ────────────────────────────
+    if (mode === "online" && isLoggedIn()) {
       try {
         const cfg = await requireLoginFresh();
         const projectName = name || cwd.split("/").pop();
@@ -117,7 +142,7 @@ async function run() {
 
         await api.put(`/projects/${project_id}/context`, contextPayload, cfg.access_token);
 
-        writeRC({ project_id, git_remote: git_remote || null });
+        writeRC({ mode, project_id, git_remote: git_remote || null });
 
         console.log(" done.");
         if (already_existed) {
@@ -130,12 +155,17 @@ async function run() {
       } catch (err) {
         console.error(`\nCloud sync failed: ${err.message}`);
         console.log("Saving context locally only.");
-        writeRC({ project_id: null, git_remote: git_remote || null, context: contextPayload });
+        writeRC({ mode, project_id: null, git_remote: git_remote || null, context: contextPayload });
       }
     } else {
-      writeRC({ project_id: null, git_remote: git_remote || null, context: contextPayload });
-      console.log("\n✓  Context saved to .prepclirc (local only).");
-      console.log("   Log in with `prepcli auth login` to sync to cloud.");
+      writeRC({ mode, project_id: null, git_remote: git_remote || null, context: contextPayload });
+      if (mode === "offline") {
+        console.log("\n✓  Context saved to .prepclirc (offline mode).");
+        console.log("   Run `prepcli mode online` anytime to switch to online mode.");
+      } else {
+        console.log("\n✓  Context saved to .prepclirc (local only).");
+        console.log("   Log in with `prepcli auth login` to sync to cloud.");
+      }
     }
 
     // ── Shadow branch + git hooks ─────────────────────────────────────────────

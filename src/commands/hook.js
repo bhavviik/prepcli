@@ -10,7 +10,7 @@ const {
   initShadowBranch, fetchShadowBranch,
   writeDecisionRecord,
 } = require("../lib/git");
-const { isLoggedIn, requireLoginFresh, readRC } = require("../lib/config");
+const { isLoggedIn, requireLoginFresh, readRC, isOffline } = require("../lib/config");
 const api = require("../lib/api");
 
 async function askSummary(prompt) {
@@ -91,8 +91,8 @@ async function handlePrePush() {
 
   process.stderr.write(" done.\n");
 
-  // Write lean summary to cloud if logged in
-  if (isLoggedIn()) {
+  // Write lean summary to cloud if online mode and logged in
+  if (!isOffline() && isLoggedIn()) {
     try {
       const cfg = await requireLoginFresh();
       const rc  = readRC();

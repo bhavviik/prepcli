@@ -109,6 +109,15 @@ function readRC() {
   }
 }
 
+function getMode() {
+  const rc = readRC();
+  return rc?.mode || "online";
+}
+
+function isOffline() {
+  return getMode() === "offline";
+}
+
 function writeRC(data) {
   fs.writeFileSync(RC_FILE, JSON.stringify(data, null, 2));
 }
@@ -145,6 +154,7 @@ module.exports = {
   readConfig, writeConfig, deleteConfig,
   isLoggedIn, requireLogin, requireLoginFresh, refreshIfNeeded,
   readRC, writeRC, requireRC,
+  getMode, isOffline,
   readKnownEmails, addKnownEmail,
   CONFIG_FILE, RC_FILE, KNOWN_EMAILS_FILE
 };
