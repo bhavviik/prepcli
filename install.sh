@@ -32,27 +32,39 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-# ── Check if already installed ────────────────────────────────────────────────
+# ── Check if already installed — upgrade if outdated ─────────────────────────
 if command -v prepcli >/dev/null 2>&1; then
-  VERSION=$(prepcli --version 2>/dev/null || echo "")
-  echo "  prepcli${VERSION:+ $VERSION} is already installed."
-  echo ""
-  echo "  To upgrade to the latest version:"
-  echo "    npm update -g @prepcli/prepcli"
+  CURRENT=$(prepcli --version 2>/dev/null || echo "")
+  LATEST=$(npm show @prepcli/prepcli version 2>/dev/null || echo "")
+
+  if [ -n "$LATEST" ] && [ "$CURRENT" != "$LATEST" ]; then
+    echo "  Updating prepcli $CURRENT → $LATEST..."
+    if npm install -g @prepcli/prepcli@latest; then
+      echo "  ✓  prepcli $LATEST installed"
+    else
+      echo ""
+      echo "  Update failed. Try with sudo:"
+      echo "    sudo npm install -g @prepcli/prepcli@latest"
+      echo ""
+      exit 1
+    fi
+  else
+    echo "  ✓  prepcli $CURRENT is already up to date."
+  fi
   echo ""
   exit 0
 fi
 
-# ── Install ───────────────────────────────────────────────────────────────────
+# ── Fresh install ─────────────────────────────────────────────────────────────
 echo "  Installing prepcli..."
 
-if npm install -g @prepcli/prepcli; then
+if npm install -g @prepcli/prepcli@latest; then
   VERSION=$(prepcli --version 2>/dev/null || echo "")
   echo "  ✓  prepcli${VERSION:+ $VERSION} installed"
 else
   echo ""
   echo "  Installation failed. Try with sudo:"
-  echo "    sudo npm install -g @prepcli/prepcli"
+  echo "    sudo npm install -g @prepcli/prepcli@latest"
   echo ""
   exit 1
 fi
@@ -61,7 +73,7 @@ fi
 echo ""
 echo "  Get started:"
 echo ""
-echo "    prepcli install      # copy workflow files to Claude Code / Cursor / Windsurf"
+echo "    prepcli install      # copy workflow files to Claude Code / Cursor / Windsurf / Codex"
 echo "    prepcli auth login   # create free account (optional)"
 echo "    prepcli init         # scan your project and set up context"
 echo ""

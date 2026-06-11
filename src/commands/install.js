@@ -9,6 +9,7 @@ const getClaudeTargets      = require("../lib/targets/claude");
 const getCursorTargets      = require("../lib/targets/cursor");
 const getWindsurfTargets    = require("../lib/targets/windsurf");
 const getAntigravityTargets = require("../lib/targets/antigravity");
+const getCodexTargets       = require("../lib/targets/codex");
 
 const WORKFLOW_DIR = path.resolve(__dirname, "../../workflows");
 
@@ -18,7 +19,8 @@ function getTargets() {
     ...getClaudeTargets(ctx),
     ...getCursorTargets(ctx),
     ...getWindsurfTargets(ctx),
-    ...getAntigravityTargets(ctx)
+    ...getAntigravityTargets(ctx),
+    ...getCodexTargets(ctx)
   ];
   return all.map((t) => {
     const cmdFound  = t.commandNames.some(commandExists);

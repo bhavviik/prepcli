@@ -39,9 +39,9 @@ program
 // ── Install ───────────────────────────────────────────────────────────────────
 program
   .command("install")
-  .description("Copy workflow files to Claude Code / Cursor / Windsurf / Antigravity")
+  .description("Copy workflow files to Claude Code / Cursor / Windsurf / Antigravity / Codex")
   .option("--all", "Install to all detected tools")
-  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, windsurf, antigravity)")
+  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, windsurf, antigravity, codex-project, codex-personal)")
   .option("--yes, -y", "Skip confirmation prompt")
   .action((opts) => require("../src/commands/install").run(opts));
 
@@ -95,6 +95,12 @@ program
   .option("--commit <hash>",   "Show decision for a specific commit")
   .option("--last <period>",   "Filter by time period, e.g. 30d")
   .action((opts) => require("../src/commands/log").run(opts));
+
+// ── Update ────────────────────────────────────────────────────────────────────
+program
+  .command("update")
+  .description("Update prepcli to the latest version")
+  .action(() => require("../src/commands/update").run());
 
 // ── Mode ──────────────────────────────────────────────────────────────────────
 program
