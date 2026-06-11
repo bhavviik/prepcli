@@ -1,9 +1,9 @@
 {
-  "name": "prepcli",
-  "version": "0.1.0",
+  "name": "@prepcli/prepcli",
+  "version": "0.1.5",
   "description": "Persistent AI collaboration layer — context, decisions, and self-improving prompts",
   "bin": {
-    "prepcli": "./bin/prepcli.js"
+    "prepcli": "bin/prepcli.js"
   },
   "files": [
     "bin",
@@ -33,7 +33,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bhavikdevganiya/prepcli.git"
+    "url": "git+https://github.com/bhavviik/prepcli.git"
   },
   "engines": {
     "node": ">=18"

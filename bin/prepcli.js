@@ -6,7 +6,29 @@ const { program } = require("commander");
 program
   .name("prepcli")
   .description("Persistent AI collaboration layer — context, decisions, and self-improving prompts")
-  .version("0.1.0");
+  .version("0.1.2")
+  .addHelpText("beforeAll", `
+  Get started:
+    1. prepcli auth login     sign in with email OTP
+    2. prepcli install        copy workflows to Claude Code / Cursor / Windsurf
+    3. prepcli init           scan project and set up context
+`)
+  .addHelpText("afterAll", `
+  ── Setup ──────────────────────────────────────────────────────────
+    auth login / logout / status
+    install [--tool <id>] [--all]
+    init                              needs: auth (online mode)
+    uninstall
+    mode offline | online             switch sync mode
+
+  ── Daily use ──────────────────────────────────────────────────────
+    context [--preview]               needs: auth, init
+    session add / show / clear
+    record [--what] [--why]           needs: auth, init
+    log [--workflow] [--last <30d>]
+
+  Run "prepcli help <command>" for full options on any command.
+`);
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 program
@@ -14,20 +36,20 @@ program
   .description("login | logout | status")
   .action((action) => require("../src/commands/auth").run(action));
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-program
-  .command("init")
-  .description("Scan codebase, create .prepclirc, push initial context to cloud")
-  .action(() => require("../src/commands/init").run());
-
 // ── Install ───────────────────────────────────────────────────────────────────
 program
   .command("install")
-  .description("Copy workflow files to AI tool directories")
+  .description("Copy workflow files to Claude Code / Cursor / Windsurf / Antigravity / Codex")
   .option("--all", "Install to all detected tools")
-  .option("--tool <ids>", "Comma-separated tool ids (claude-project, cursor, windsurf…)")
+  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, windsurf, antigravity, codex-project, codex-personal)")
   .option("--yes, -y", "Skip confirmation prompt")
   .action((opts) => require("../src/commands/install").run(opts));
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+program
+  .command("init")
+  .description("Scan codebase, create .prepclirc, push initial context  [needs: auth]")
+  .action(() => require("../src/commands/init").run());
 
 // ── Uninstall ─────────────────────────────────────────────────────────────────
 program
@@ -40,46 +62,71 @@ program
 // ── Context ───────────────────────────────────────────────────────────────────
 program
   .command("context")
-  .description("Show current project context from cloud")
+  .description("Show project context injected at session start  [needs: auth, init]")
   .option("--preview", "Show exactly what STEP 0 would inject")
   .option("--edit", "Open context in editor")
   .action((opts) => require("../src/commands/context").run(opts));
+
+// ── Session ───────────────────────────────────────────────────────────────────
+program
+  .command("session <action>")
+  .description("add | show | clear — manage the local AI session accumulator")
+  .option("--workflow <type>", "Workflow type: debug | plan | review | prep | refactor | write")
+  .option("--what <text>",     "One sentence: what was done")
+  .option("--why <text>",      "One sentence: why this approach")
+  .action((action, opts) => require("../src/commands/session").run(action, opts));
+
+// ── Record ────────────────────────────────────────────────────────────────────
+program
+  .command("record")
+  .description("Manually save a decision to the shadow branch  [needs: auth, init]")
+  .option("--what <text>",      "What was decided or discovered")
+  .option("--why <text>",       "Why this approach over alternatives")
+  .option("--ruled-out <text>", "What was considered and rejected (comma-separated)")
+  .option("--workflow <type>",  "Workflow type: manual | debug | plan | discovery")
+  .action((opts) => require("../src/commands/record").run(opts));
 
 // ── Decision log ──────────────────────────────────────────────────────────────
 program
   .command("log")
   .description("Browse AI decision records linked to commits")
-  .option("--workflow <type>", "Filter by workflow type (debug, plan, review…)")
-  .option("--file <path>", "Filter by file path")
-  .option("--commit <hash>", "Show decision for a specific commit")
-  .option("--last <period>", "Filter by time period (e.g. 30d)")
+  .option("--workflow <type>", "Filter by workflow type: debug | plan | review…")
+  .option("--file <path>",     "Filter by file path")
+  .option("--commit <hash>",   "Show decision for a specific commit")
+  .option("--last <period>",   "Filter by time period, e.g. 30d")
   .action((opts) => require("../src/commands/log").run(opts));
 
-// ── Record ────────────────────────────────────────────────────────────────────
+// ── Update ────────────────────────────────────────────────────────────────────
 program
-  .command("record [reason]")
-  .description("Manually save a decision to the shadow branch")
-  .action((reason) => require("../src/commands/record").run(reason));
+  .command("update")
+  .description("Update prepcli to the latest version")
+  .action(() => require("../src/commands/update").run());
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// ── Mode ──────────────────────────────────────────────────────────────────────
 program
-  .command("stats")
-  .description("Show prompt quality scores and delta trends")
-  .option("--workflow <type>", "Filter by workflow type")
-  .option("--last <period>", "Filter by time period (e.g. 30d)")
-  .option("--compare <period>", "Compare to an earlier period")
+  .command("mode [value]")
+  .description("offline | online — switch or show current mode")
+  .action((value) => require("../src/commands/mode").run(value));
+
+// ── Internal git hook handler (hidden) ────────────────────────────────────────
+program
+  .command("_hook <name>", { hidden: true })
+  .action((name) => require("../src/commands/hook").run(name));
+
+// ── Not yet implemented (hidden) ──────────────────────────────────────────────
+program
+  .command("stats", { hidden: true })
+  .option("--workflow <type>")
+  .option("--last <period>")
+  .option("--compare <period>")
   .action((opts) => require("../src/commands/stats").run(opts));
 
-// ── Team ──────────────────────────────────────────────────────────────────────
 program
-  .command("team <action> [email]")
-  .description("invite | list | remove")
+  .command("team <action> [email]", { hidden: true })
   .action((action, email) => require("../src/commands/team").run(action, email));
 
-// ── Doctor ────────────────────────────────────────────────────────────────────
 program
-  .command("doctor")
-  .description("Diagnose setup issues (auth, .prepclirc, git hooks, push refspec)")
+  .command("doctor", { hidden: true })
   .action(() => require("../src/commands/doctor").run());
 
 program.parse();

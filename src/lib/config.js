@@ -93,6 +93,11 @@ async function requireLoginFresh() {
     console.error("Session expired. Run: prepcli auth login");
     process.exit(1);
   }
+  const now = Math.floor(Date.now() / 1000);
+  if (cfg.expires_at && now >= cfg.expires_at) {
+    console.error("Session expired. Run: prepcli auth login");
+    process.exit(1);
+  }
   return cfg;
 }
 
@@ -102,6 +107,15 @@ function readRC() {
   } catch {
     return null;
   }
+}
+
+function getMode() {
+  const rc = readRC();
+  return rc?.mode || "online";
+}
+
+function isOffline() {
+  return getMode() === "offline";
 }
 
 function writeRC(data) {
@@ -140,6 +154,7 @@ module.exports = {
   readConfig, writeConfig, deleteConfig,
   isLoggedIn, requireLogin, requireLoginFresh, refreshIfNeeded,
   readRC, writeRC, requireRC,
+  getMode, isOffline,
   readKnownEmails, addKnownEmail,
   CONFIG_FILE, RC_FILE, KNOWN_EMAILS_FILE
 };
