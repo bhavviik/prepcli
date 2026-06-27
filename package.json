@@ -1,6 +1,6 @@
 {
   "name": "@prepcli/prepcli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Persistent AI collaboration layer — context, decisions, and self-improving prompts",
   "bin": {
     "prepcli": "bin/prepcli.js"
