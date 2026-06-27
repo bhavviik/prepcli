@@ -171,13 +171,20 @@ function installPrePushHook(cwd = process.cwd()) {
 }
 
 function ensureGitignoreEntry(cwd = process.cwd()) {
-  const root        = gitRoot(cwd);
-  const ignorePath  = path.join(root, ".gitignore");
-  const entry       = ".prepcli-session";
-  const existing    = fs.existsSync(ignorePath) ? fs.readFileSync(ignorePath, "utf8") : "";
-  if (!existing.split("\n").map(l => l.trim()).includes(entry)) {
-    fs.appendFileSync(ignorePath, (existing.endsWith("\n") || !existing ? "" : "\n") + entry + "\n");
+  const root       = gitRoot(cwd);
+  const ignorePath = path.join(root, ".gitignore");
+  const entries    = [".prepcli-session", ".prepcli-deltas.json"];
+
+  let content   = fs.existsSync(ignorePath) ? fs.readFileSync(ignorePath, "utf8") : "";
+  const present = content.split("\n").map(l => l.trim());
+
+  for (const entry of entries) {
+    if (!present.includes(entry)) {
+      content += (content.endsWith("\n") || !content ? "" : "\n") + entry + "\n";
+      present.push(entry);
+    }
   }
+  fs.writeFileSync(ignorePath, content);
 }
 
 module.exports = {

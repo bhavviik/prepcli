@@ -26,6 +26,7 @@ program
     session add / show / clear
     record [--what] [--why]           needs: auth, init
     log [--workflow] [--last <30d>]
+    stats [--workflow]                prompt quality + recurring gaps
 
   Run "prepcli help <command>" for full options on any command.
 `);
@@ -113,12 +114,20 @@ program
   .command("_hook <name>", { hidden: true })
   .action((name) => require("../src/commands/hook").run(name));
 
-// ── Not yet implemented (hidden) ──────────────────────────────────────────────
+// ── Delta capture (hidden — AI calls these via workflow STEP 6) ────────────────
 program
-  .command("stats", { hidden: true })
-  .option("--workflow <type>")
-  .option("--last <period>")
-  .option("--compare <period>")
+  .command("delta <action>", { hidden: true })
+  .option("--workflow <type>", "Workflow type")
+  .option("--gap <type>",      "Gap type: missing_constraint | missing_scope | …")
+  .option("--question <text>", "The question that would have surfaced this up front")
+  .option("--message <text>",  "Raw message (classified locally if --gap omitted)")
+  .action((action, opts) => require("../src/commands/delta").run(action, opts));
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+program
+  .command("stats")
+  .description("Show prompt quality scores and recurring gap types  [needs: init]")
+  .option("--workflow <type>", "Filter by workflow type")
   .action((opts) => require("../src/commands/stats").run(opts));
 
 program
