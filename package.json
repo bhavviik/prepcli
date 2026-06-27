@@ -1,6 +1,6 @@
 {
   "name": "@prepcli/prepcli",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Persistent AI collaboration layer — context, decisions, and self-improving prompts",
   "bin": {
     "prepcli": "bin/prepcli.js"
@@ -15,8 +15,7 @@
     "test": "node --test src/tests/**/*.test.js"
   },
   "dependencies": {
-    "commander": "^12.0.0",
-    "dotenv": "^17.4.2"
+    "commander": "^12.0.0"
   },
   "keywords": [
     "ai",

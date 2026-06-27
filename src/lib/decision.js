@@ -20,37 +20,47 @@ function getChangedFiles(cwd = process.cwd()) {
   } catch { return []; }
 }
 
-function buildRecord({ id, session, commitHash, filesChanged, summary }) {
-  const date  = new Date().toISOString();
-  const turns = session.turns || [];
-
-  const workflows   = [...new Set(turns.map(t => t.workflow))].join(", ") || "unknown";
-  const turnLines   = turns.map((t, i) => `${i + 1}. [${t.workflow}]  ${t.what}`).join("\n") || "None recorded.";
-  const altLines    = turns.filter(t => t.why).map(t => `- ${t.why}`).join("\n") || "None recorded.";
-  const lastWhy     = turns.filter(t => t.why).pop()?.why || "Not recorded.";
-  const filesList   = (filesChanged || []).join(", ") || "unknown";
+// Single source of truth for the decision-record markdown format.
+// Callers prepare the section text; this only renders.
+function renderRecord({ id, commitHash, filesChanged, workflow, aiTurnCount, summary, why, ruledOut, turns }) {
+  const date      = new Date().toISOString();
+  const filesList = (filesChanged || []).join(", ") || "none";
 
   return `---
 id: ${id}
 commit: ${commitHash || "none"}
 date: ${date}
-workflow: ${workflows}
+workflow: ${workflow}
 files_changed: [${filesList}]
-ai_turn_count: ${turns.length}
+ai_turn_count: ${aiTurnCount}
 ---
 
 ## Summary
-${summary || turns.map(t => t.what).join("; ")}
+${summary}
 
 ## Why This Approach
-${lastWhy}
+${why}
 
 ## What Was Tried and Ruled Out
-${altLines}
+${ruledOut}
 
 ## AI Session Turns
-${turnLines}
+${turns}
 `;
+}
+
+function buildRecord({ id, session, commitHash, filesChanged, summary }) {
+  const turns = session.turns || [];
+
+  return renderRecord({
+    id, commitHash, filesChanged,
+    workflow:    [...new Set(turns.map(t => t.workflow))].join(", ") || "unknown",
+    aiTurnCount: turns.length,
+    summary:     summary || turns.map(t => t.what).join("; "),
+    why:         turns.filter(t => t.why).pop()?.why || "Not recorded.",
+    ruledOut:    turns.filter(t => t.why).map(t => `- ${t.why}`).join("\n") || "None recorded.",
+    turns:       turns.map((t, i) => `${i + 1}. [${t.workflow}]  ${t.what}`).join("\n") || "None recorded.",
+  });
 }
 
 function recordFilename(id, date = new Date()) {
@@ -58,4 +68,4 @@ function recordFilename(id, date = new Date()) {
   return `${d}-${id}.md`;
 }
 
-module.exports = { generateId, getCurrentCommit, getChangedFiles, buildRecord, recordFilename };
+module.exports = { generateId, getCurrentCommit, getChangedFiles, renderRecord, buildRecord, recordFilename };

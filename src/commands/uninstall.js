@@ -1,36 +1,10 @@
 "use strict";
 
 const fs   = require("node:fs");
-const os   = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline/promises");
 
-const getClaudeTargets      = require("../lib/targets/claude");
-const getCursorTargets      = require("../lib/targets/cursor");
-const getWindsurfTargets    = require("../lib/targets/windsurf");
-const getAntigravityTargets = require("../lib/targets/antigravity");
-
-const WORKFLOW_DIR = path.resolve(__dirname, "../../workflows");
-
-function getTargets() {
-  const ctx = { cwd: process.cwd(), home: os.homedir() };
-  return [
-    ...getClaudeTargets(ctx),
-    ...getCursorTargets(ctx),
-    ...getWindsurfTargets(ctx),
-    ...getAntigravityTargets(ctx),
-  ];
-}
-
-function listWorkflows() {
-  return fs.readdirSync(WORKFLOW_DIR).filter((f) => f.endsWith(".md")).sort();
-}
-
-function fmtDest(dest) {
-  const home = os.homedir();
-  if (dest.startsWith(home)) return `~${dest.slice(home.length)}`;
-  return path.relative(process.cwd(), dest) || ".";
-}
+const { getTargets, listWorkflows, fmtDest } = require("../lib/targets");
 
 function isInstalled(destination, workflows) {
   return workflows.some((f) => {

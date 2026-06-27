@@ -1,8 +1,7 @@
 "use strict";
 
-const path = require("node:path");
-require("dotenv").config({ path: path.join(__dirname, "../../.env") });
-
+// Override the API host for local dev with PREPCLI_API_URL
+// (e.g. `node --env-file=.env bin/prepcli.js ...`).
 const WORKER_URL = process.env.PREPCLI_API_URL || "https://api.prepcli.in";
 
 async function request(method, endpoint, body, token) {
@@ -31,8 +30,7 @@ async function request(method, endpoint, body, token) {
 }
 
 module.exports = {
-  get:  (endpoint, token)        => request("GET",    endpoint, null, token),
-  post: (endpoint, body, token)  => request("POST",   endpoint, body, token),
-  put:  (endpoint, body, token)  => request("PUT",    endpoint, body, token),
-  del:  (endpoint, token)        => request("DELETE", endpoint, null, token),
+  get:  (endpoint, token)        => request("GET",  endpoint, null, token),
+  post: (endpoint, body, token)  => request("POST", endpoint, body, token),
+  put:  (endpoint, body, token)  => request("PUT",  endpoint, body, token),
 };

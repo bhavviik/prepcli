@@ -1,57 +1,10 @@
 "use strict";
 
 const fs   = require("node:fs");
-const os   = require("node:os");
 const path = require("node:path");
 const readline = require("node:readline/promises");
 
-const getClaudeTargets      = require("../lib/targets/claude");
-const getCursorTargets      = require("../lib/targets/cursor");
-const getWindsurfTargets    = require("../lib/targets/windsurf");
-const getAntigravityTargets = require("../lib/targets/antigravity");
-const getCodexTargets       = require("../lib/targets/codex");
-
-const WORKFLOW_DIR = path.resolve(__dirname, "../../workflows");
-
-function getTargets() {
-  const ctx = { cwd: process.cwd(), home: os.homedir() };
-  const all = [
-    ...getClaudeTargets(ctx),
-    ...getCursorTargets(ctx),
-    ...getWindsurfTargets(ctx),
-    ...getAntigravityTargets(ctx),
-    ...getCodexTargets(ctx)
-  ];
-  return all.map((t) => {
-    const cmdFound  = t.commandNames.some(commandExists);
-    const pathFound = t.hintPaths.some(pathExists);
-    return { ...t, detected: cmdFound || pathFound };
-  });
-}
-
-function commandExists(cmd) {
-  return (process.env.PATH || "").split(path.delimiter).some((dir) => {
-    const exts = process.platform === "win32" ? ["", ".cmd", ".exe"] : [""];
-    return exts.some((ext) => {
-      try { fs.accessSync(path.join(dir, cmd + ext), fs.constants.X_OK); return true; }
-      catch { return false; }
-    });
-  });
-}
-
-function pathExists(p) {
-  try { fs.accessSync(p, fs.constants.F_OK); return true; } catch { return false; }
-}
-
-function listWorkflows() {
-  return fs.readdirSync(WORKFLOW_DIR).filter((f) => f.endsWith(".md")).sort();
-}
-
-function fmtDest(dest) {
-  const home = os.homedir();
-  if (dest.startsWith(home)) return `~${dest.slice(home.length)}`;
-  return path.relative(process.cwd(), dest) || ".";
-}
+const { getTargets, listWorkflows, fmtDest, WORKFLOW_DIR } = require("../lib/targets");
 
 async function chooseTargets(targets, opts) {
   if (opts.all || opts.yes) return targets;
