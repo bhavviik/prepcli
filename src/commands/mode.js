@@ -1,6 +1,6 @@
 "use strict";
 
-const { readRC, writeRC } = require("../lib/config");
+const { readRC, writeRC, isLoggedIn } = require("../lib/config");
 
 function run(newMode) {
   const rc = readRC();
@@ -39,7 +39,7 @@ function run(newMode) {
     console.log("Switched to online mode.");
     console.log("  ✓  context synced to cloud");
     console.log("  ✓  team sharing available");
-    if (!require("../lib/config").isLoggedIn()) {
+    if (!isLoggedIn()) {
       console.log("\nNot logged in. Run: prepcli auth login");
     }
   }

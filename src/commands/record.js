@@ -2,7 +2,7 @@
 
 const readline = require("node:readline/promises");
 
-const { generateId, getCurrentCommit, getChangedFiles, recordFilename } = require("../lib/decision");
+const { generateId, getCurrentCommit, getChangedFiles, renderRecord, recordFilename } = require("../lib/decision");
 const {
   shadowBranchExists, shadowBranchExistsOnRemote,
   initShadowBranch, fetchShadowBranch,
@@ -17,33 +17,14 @@ async function prompt(rl, question, fallback = "") {
 }
 
 function buildRecord({ id, what, why, ruledOut, workflow, commitHash, filesChanged }) {
-  const date      = new Date().toISOString();
-  const filesList = (filesChanged || []).join(", ") || "none";
-  const ruledOutSection = ruledOut
-    ? ruledOut.split(",").map(r => `- ${r.trim()}`).join("\n")
-    : "None recorded.";
-
-  return `---
-id: ${id}
-commit: ${commitHash || "none"}
-date: ${date}
-workflow: ${workflow}
-files_changed: [${filesList}]
-ai_turn_count: 0
----
-
-## Summary
-${what}
-
-## Why This Approach
-${why}
-
-## What Was Tried and Ruled Out
-${ruledOutSection}
-
-## AI Session Turns
-Manual record — not from an AI session.
-`;
+  return renderRecord({
+    id, commitHash, filesChanged, workflow,
+    aiTurnCount: 0,
+    summary:     what,
+    why,
+    ruledOut:    ruledOut ? ruledOut.split(",").map(r => `- ${r.trim()}`).join("\n") : "None recorded.",
+    turns:       "Manual record — not from an AI session.",
+  });
 }
 
 async function run(opts = {}) {

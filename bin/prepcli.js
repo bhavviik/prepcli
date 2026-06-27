@@ -6,7 +6,7 @@ const { program } = require("commander");
 program
   .name("prepcli")
   .description("Persistent AI collaboration layer — context, decisions, and self-improving prompts")
-  .version("0.1.2")
+  .version(require("../package.json").version)
   .addHelpText("beforeAll", `
   Get started:
     1. prepcli auth login     sign in with email OTP

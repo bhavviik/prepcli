@@ -2,16 +2,10 @@
 
 const fs   = require("node:fs");
 const path = require("node:path");
-const { execSync } = require("node:child_process");
+const { gitRoot } = require("./git");
 
 const SESSION_FILENAME = ".prepcli-session";
 const STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-function gitRoot(cwd = process.cwd()) {
-  try {
-    return execSync("git rev-parse --show-toplevel", { cwd, stdio: ["pipe", "pipe", "pipe"] }).toString().trim();
-  } catch { return cwd; }
-}
 
 function sessionPath(cwd = process.cwd()) {
   return path.join(gitRoot(cwd), SESSION_FILENAME);
