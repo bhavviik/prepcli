@@ -10,7 +10,7 @@ program
   .addHelpText("beforeAll", `
   Get started:
     1. prepcli auth login     sign in with email OTP
-    2. prepcli install        copy workflows to Claude Code / Cursor / Windsurf
+    2. prepcli install        copy workflows to Claude Code / Cursor / Codex
     3. prepcli init           scan project and set up context
 `)
   .addHelpText("afterAll", `
@@ -40,9 +40,9 @@ program
 // ── Install ───────────────────────────────────────────────────────────────────
 program
   .command("install")
-  .description("Copy workflow files to Claude Code / Cursor / Windsurf / Antigravity / Codex")
+  .description("Copy workflow files to Claude Code / Cursor / Antigravity / Codex")
   .option("--all", "Install to all detected tools")
-  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, windsurf, antigravity, codex-project, codex-personal)")
+  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, antigravity, codex-project, codex-personal)")
   .option("--yes, -y", "Skip confirmation prompt")
   .action((opts) => require("../src/commands/install").run(opts));
 

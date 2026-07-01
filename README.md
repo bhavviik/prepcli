@@ -1,6 +1,6 @@
 # prepcli
 
-Persistent AI collaboration layer — structured prompts, project context, and decision records for Claude, Cursor, Windsurf, Antigravity, and more.
+Persistent AI collaboration layer — structured prompts, project context, and decision records for Claude, Cursor, Antigravity, Codex, and more.
 
 ---
 
@@ -235,8 +235,8 @@ prepcli install
 When prompted, choose where to install:
 - **Claude Code** — personal (`~/.claude/commands`) or project (`.claude/commands`)
 - **Cursor** — `.cursor/prompts`
-- **Windsurf** — `.windsurf`
 - **Antigravity** — `.agent/workflows`
+- **Codex** — `~/.codex` or `.codex`
 
 ---
 
@@ -304,7 +304,7 @@ prepcli doctor                     # diagnose setup issues
 
 - Node.js >= 18
 - Git
-- Claude Code, Cursor, Windsurf, or Antigravity
+- Claude Code, Cursor, Antigravity, or Codex
 
 ---
 
@@ -354,7 +354,7 @@ src/
     git.js             shadow branch plumbing
     session-file.js    .prepcli-session read/write
     decision.js        Markdown record builder
-    targets/           AI tool detection (Claude, Cursor, Windsurf, Antigravity)
+    targets.js         AI tool detection (Claude, Cursor, Antigravity, Codex)
 
 workflows/
   prep.md              /prep workflow

@@ -73,7 +73,7 @@ fi
 echo ""
 echo "  Get started:"
 echo ""
-echo "    prepcli install      # copy workflow files to Claude Code / Cursor / Windsurf / Codex"
+echo "    prepcli install      # copy workflow files to Claude Code / Cursor / Codex"
 echo "    prepcli auth login   # create free account (optional)"
 echo "    prepcli init         # scan your project and set up context"
 echo ""

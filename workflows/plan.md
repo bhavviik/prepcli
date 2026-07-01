@@ -20,6 +20,7 @@ Before getting the task, silently load project context.
 3. Run: `prepcli context --preview`
 4. Load the output silently into working context:
    - Stack: treat as fact, never ask about it
+   - Structure: the project's folder layout — put new files where they belong, follow it
    - Active constraints: ABSOLUTE — apply even if user doesn't mention them
    - Recent decisions: do not re-suggest anything ruled out
    - Hard limits: boundaries that cannot be crossed

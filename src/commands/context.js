@@ -12,6 +12,12 @@ function fmtContext(ctx) {
     for (const [k, v] of Object.entries(ctx.stack)) lines.push(`  ${k}: ${v}`);
   }
 
+  if (ctx.structure?.dirs?.length) {
+    lines.push("\nStructure:");
+    ctx.structure.dirs.forEach(d => lines.push(`  ${d}/`));
+    if (ctx.structure.truncated) lines.push("  …");
+  }
+
   if (ctx.hard_limits?.length) {
     lines.push("\nHard limits:");
     ctx.hard_limits.forEach(l => lines.push(`  • ${l}`));
@@ -47,6 +53,9 @@ function fmtPreview(ctx) {
 
   if (ctx.stack && Object.keys(ctx.stack).length > 0) {
     parts.push("Stack: " + Object.entries(ctx.stack).map(([k, v]) => `${k}=${v}`).join(", "));
+  }
+  if (ctx.structure?.dirs?.length) {
+    parts.push("Structure: " + ctx.structure.dirs.join(", ") + (ctx.structure.truncated ? ", …" : ""));
   }
   if (ctx.hard_limits?.length) {
     parts.push("Hard limits: " + ctx.hard_limits.join("; "));

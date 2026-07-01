@@ -191,4 +191,25 @@ function detectStack(cwd = process.cwd()) {
   return result;
 }
 
-module.exports = { detectStack };
+function detectStructure(cwd = process.cwd(), { maxDepth = 2, maxDirs = 40 } = {}) {
+  let out;
+  try {
+    out = execSync("git ls-files", { cwd, stdio: ["pipe", "pipe", "pipe"] }).toString().trim();
+  } catch {
+    return null;
+  }
+  const files = out.split("\n").filter(Boolean);
+  if (!files.length) return null;
+
+  const dirs = new Set();
+  for (const f of files) {
+    const parts = f.split("/");
+    for (let d = 1; d < parts.length && d <= maxDepth; d++) {
+      dirs.add(parts.slice(0, d).join("/"));
+    }
+  }
+  const sorted = [...dirs].sort();
+  return { file_count: files.length, dirs: sorted.slice(0, maxDirs), truncated: sorted.length > maxDirs };
+}
+
+module.exports = { detectStack, detectStructure };

@@ -35,14 +35,6 @@ function buildTargets({ cwd, home }) {
       defaultWhenUndetected: true,
     },
     {
-      id: "windsurf",
-      label: "Windsurf (.windsurf)",
-      destination: path.join(cwd, ".windsurf"),
-      commandNames: ["windsurf"],
-      hintPaths: [path.join(home, ".windsurf"), path.join(cwd, ".windsurf")],
-      defaultWhenUndetected: true,
-    },
-    {
       id: "antigravity",
       label: "Antigravity (.agent/workflows)",
       destination: path.join(cwd, ".agent", "workflows"),
