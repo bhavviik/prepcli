@@ -1,7 +1,7 @@
 "use strict";
 
 const readline = require("node:readline/promises");
-const { detectStack }                              = require("../lib/detect");
+const { detectStack, detectStructure }             = require("../lib/detect");
 const { isLoggedIn, requireLoginFresh, readRC, writeRC } = require("../lib/config");
 const api = require("../lib/api");
 
@@ -68,11 +68,16 @@ async function run() {
 
   const cwd = process.cwd();
   const { stack, name, git_remote } = detectStack(cwd);
+  const structure = detectStructure(cwd);
 
   if (Object.keys(stack).length > 0) {
     console.log("Detected stack:\n" + displayStack(stack, git_remote));
   } else {
     console.log("Could not auto-detect stack.");
+  }
+
+  if (structure) {
+    console.log(`Detected structure: ${structure.dirs.length} directories, ${structure.file_count} tracked files.`);
   }
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -120,6 +125,7 @@ async function run() {
 
     const contextPayload = {
       stack:               finalStack,
+      structure:           structure || null,
       hard_limits:         hardLimits,
       active_constraints:  activeConstraints,
       conventions,

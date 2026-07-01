@@ -10,7 +10,7 @@ program
   .addHelpText("beforeAll", `
   Get started:
     1. prepcli auth login     sign in with email OTP
-    2. prepcli install        copy workflows to Claude Code / Cursor / Windsurf
+    2. prepcli install        copy workflows to Claude Code / Cursor / Codex
     3. prepcli init           scan project and set up context
 `)
   .addHelpText("afterAll", `
@@ -26,6 +26,7 @@ program
     session add / show / clear
     record [--what] [--why]           needs: auth, init
     log [--workflow] [--last <30d>]
+    stats [--workflow]                prompt quality + recurring gaps
 
   Run "prepcli help <command>" for full options on any command.
 `);
@@ -39,9 +40,9 @@ program
 // ── Install ───────────────────────────────────────────────────────────────────
 program
   .command("install")
-  .description("Copy workflow files to Claude Code / Cursor / Windsurf / Antigravity / Codex")
+  .description("Copy workflow files to Claude Code / Cursor / Antigravity / Codex")
   .option("--all", "Install to all detected tools")
-  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, windsurf, antigravity, codex-project, codex-personal)")
+  .option("--tool <ids>", "Comma-separated tool ids (claude-code, cursor, antigravity, codex-project, codex-personal)")
   .option("--yes, -y", "Skip confirmation prompt")
   .action((opts) => require("../src/commands/install").run(opts));
 
@@ -113,12 +114,20 @@ program
   .command("_hook <name>", { hidden: true })
   .action((name) => require("../src/commands/hook").run(name));
 
-// ── Not yet implemented (hidden) ──────────────────────────────────────────────
+// ── Delta capture (hidden — AI calls these via workflow STEP 6) ────────────────
 program
-  .command("stats", { hidden: true })
-  .option("--workflow <type>")
-  .option("--last <period>")
-  .option("--compare <period>")
+  .command("delta <action>", { hidden: true })
+  .option("--workflow <type>", "Workflow type")
+  .option("--gap <type>",      "Gap type: missing_constraint | missing_scope | …")
+  .option("--question <text>", "The question that would have surfaced this up front")
+  .option("--message <text>",  "Raw message (classified locally if --gap omitted)")
+  .action((action, opts) => require("../src/commands/delta").run(action, opts));
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+program
+  .command("stats")
+  .description("Show prompt quality scores and recurring gap types  [needs: init]")
+  .option("--workflow <type>", "Filter by workflow type")
   .action((opts) => require("../src/commands/stats").run(opts));
 
 program
